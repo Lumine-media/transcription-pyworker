@@ -21,7 +21,7 @@ from vastai import (
 os.makedirs("/var/log/model", exist_ok=True)
 log_file = open("/var/log/model/server.log", "w")
 subprocess.Popen(
-    ["python3", "-u", "/app/model_server.py"],
+    ["/usr/bin/python3", "-u", "/app/model_server.py"],
     stdout=log_file,
     stderr=subprocess.STDOUT,
     cwd="/app",
