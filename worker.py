@@ -7,7 +7,20 @@ and runs worker.py directly. So we must start model_server.py ourselves.
 """
 
 import os
+import sys
 import subprocess
+import shutil
+
+print(f"[worker.py] Starting. Python: {sys.executable}", flush=True)
+print(f"[worker.py] CWD: {os.getcwd()}", flush=True)
+print(f"[worker.py] /app exists: {os.path.isdir('/app')}", flush=True)
+print(f"[worker.py] /app/model_server.py exists: {os.path.isfile('/app/model_server.py')}", flush=True)
+
+# Find the right python3 — prefer system python with GPU packages
+python3_path = "/usr/bin/python3"
+if not os.path.isfile(python3_path):
+    python3_path = shutil.which("python3") or "python3"
+print(f"[worker.py] Using python3 at: {python3_path}", flush=True)
 
 from vastai import (
     Worker,
@@ -20,12 +33,14 @@ from vastai import (
 # Start model server in background before PyWorker
 os.makedirs("/var/log/model", exist_ok=True)
 log_file = open("/var/log/model/server.log", "w")
-subprocess.Popen(
-    ["/usr/bin/python3", "-u", "/app/model_server.py"],
+print(f"[worker.py] Starting model_server.py with {python3_path}...", flush=True)
+proc = subprocess.Popen(
+    [python3_path, "-u", "/app/model_server.py"],
     stdout=log_file,
     stderr=subprocess.STDOUT,
     cwd="/app",
 )
+print(f"[worker.py] model_server.py started with PID {proc.pid}", flush=True)
 
 worker_config = WorkerConfig(
     model_server_url="http://127.0.0.1",
